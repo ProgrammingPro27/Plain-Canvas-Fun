@@ -27,7 +27,7 @@ window.addEventListener("mousemove", function (e) {
 
 setInterval(function () {
     if (flag == true) {
-        arr.push({ x: gX, y: gY, r: 50 });
+        arr.push({ x: gX, y: gY, r: 50, vy:0 });
     }
 }, 100);
 
@@ -52,9 +52,6 @@ function draw() {
 
     if (arr.length !== 0) {
         for (let i = 0; i < arr.length; i++) {
-            if (!arr[i].vy) {
-                arr[i].vy = 0; // Initialize vertical velocity if not set
-            }
             drawArc(arr[i]);
         }
     }
