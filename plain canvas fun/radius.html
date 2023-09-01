@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            font-weight: bold;
+            height: 100vh;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+        }
+
+        #canvas {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background-image: url(spaceBackgroundBB.png);
+        }
+    </style>
+    <title>Document</title>
+</head>
+
+<body>
+    <canvas id="canvas"></canvas>
+    <script>
+        let canvas = document.getElementById("canvas");
+        let ctx = canvas.getContext("2d");
+        let width = canvas.width = window.innerWidth;
+        let height = canvas.height = window.innerHeight;
+
+        let r = 50
+        let x = width / 2 - r / 2;
+        let y = height / 2 - r / 2;
+
+        let mouseX = 0;
+        let mouseY = 0;
+
+        function circlesIntersect(c1, c2) {
+            const dx = c1.x - c2.x;
+            const dy = c1.y - c2.y;
+            const d = Math.sqrt(dx * dx + dy * dy);
+            return d <= c1.r + c2.r;
+        }
+
+        function preventCollisions(circles) {
+            const epsilon = 0.1; // A small value to avoid circles getting stuck
+            let collided = true;
+
+            while (collided) {
+                collided = false;
+
+                for (let i = 0; i < circles.length; i++) {
+                    for (let j = i + 1; j < circles.length; j++) {
+                        const c1 = circles[i];
+                        const c2 = circles[j];
+
+                        if (circlesIntersect(c1, c2)) {
+                            const dx = c1.x - c2.x;
+                            const dy = c1.y - c2.y;
+                            const d = Math.sqrt(dx * dx + dy * dy);
+
+                            const overlap = (c1.r + c2.r) - d + epsilon;
+                            const adjustX = (dx / d) * overlap * 0.5;
+                            const adjustY = (dy / d) * overlap * 0.5;
+
+                            c1.x += adjustX;
+                            c1.y += adjustY;
+                            c2.x -= adjustX;
+                            c2.y -= adjustY;
+
+                            collided = true;
+                        }
+                    }
+                }
+            }
+        }
+
+        function getWindowToCanvas(canvas, x, y) {
+            var rect = canvas.getBoundingClientRect();
+            var screenX = (x - rect.left) * (canvas.width / rect.width);
+            var screenY = (y - rect.top) * (canvas.height / rect.height);
+            const ctx = canvas.getContext("2d");
+            var transform = ctx.getTransform();
+            if (transform.isIdentity) {
+                return {
+                    x: screenX,
+                    y: screenY
+                };
+            } else {
+                //   console.log(transform.invertSelf()); //don't invert twice!!
+                const invMat = transform.invertSelf();
+
+                return {
+                    x: Math.round(screenX * invMat.a + screenY * invMat.c + invMat.e),
+                    y: Math.round(screenX * invMat.b + screenY * invMat.d + invMat.f)
+                };
+            }
+        }
+
+        window.addEventListener("mousemove", function (e) {
+            mouseX = e.clientX;
+            mouseY = e.clientY;
+        })
+
+        let enemies = [];
+        //generate enemies
+
+        function setPointInRadiusRange(min, max, endAngle) {
+            let coords = getWindowToCanvas(canvas, x, y);
+            let coords2 = getWindowToCanvas(canvas, mouseX, mouseY);
+
+            // Calculate the angle between the mouse position and the center of the canvas
+
+            let centerX = canvas.width / 2;//point of player X*
+            let centerY = canvas.height / 2;//point of player Y*
+
+            let angleToMouse = Math.atan2(coords2.y - centerY, coords2.x - centerX);
+            angleToMouse = (angleToMouse + 2 * Math.PI) % (2 * Math.PI); // Normalize to [0, 2*PI]
+
+            // Define the range for spawning enemies (in pixels)
+            let minDistance = min; // Minimum distance from the ship
+            let maxDistance = minDistance + max; // Maximum distance from the ship
+
+            // Generate a random distance within the specified range
+            let distance = minDistance + Math.random() * (maxDistance - minDistance);
+
+            // Generate a random angle within the specified range
+            let halfEndAngle = (endAngle * Math.PI / 180) / 2; // Convert degrees to radians and divide by 2
+            let angleOffset = -halfEndAngle + Math.random() * endAngle * Math.PI / 180; // Random angle within the specified range
+
+            let angle = angleToMouse + angleOffset;
+
+            // Calculate new coordinates based on distance and angle
+            let newX = Math.floor(coords.x + distance * Math.cos(angle));
+            let newY = Math.floor(coords.y + distance * Math.sin(angle)); // not sure if floor is needed
+
+            //            //DRAW BOUNDARIES ONLY IF NEEDED
+            //            let firstPathAngle = angleToMouse - (endAngle * Math.PI / 180 / 2);
+            //            let secondPathAngle = angleToMouse + (endAngle * Math.PI / 180 / 2);
+            //            let firstPathX = Math.floor(coords.x + distance * Math.cos(firstPathAngle));
+            //            let firstPathY = Math.floor(coords.y + distance * Math.sin(firstPathAngle));
+            //            let secondPathX = Math.floor(coords.x + distance * Math.cos(secondPathAngle));
+            //            let secondPathY = Math.floor(coords.y + distance * Math.sin(secondPathAngle));
+            //
+            //            ctx.beginPath();
+            //            ctx.moveTo(coords.x, coords.y);
+            //            ctx.lineTo(firstPathX, firstPathY);
+            //            ctx.strokeStyle = "red";
+            //            ctx.stroke();
+            //            ctx.closePath();
+            //
+            //            ctx.beginPath();
+            //            ctx.moveTo(coords.x, coords.y);
+            //            ctx.lineTo(secondPathX, secondPathY);
+            //            ctx.strokeStyle = "red";
+            //            ctx.stroke();
+            //            ctx.closePath();
+
+            return { newX, newY }
+        }
+
+        //        setInterval(function () {
+        //            if (enemies.length < 250) {
+        //                let newCoords = setPointInRadiusRange(800, 500, 90)
+        //                enemies.push({ x: newCoords.newX, y: newCoords.newY, r: 20 });
+        //                preventCollisions(enemies)
+        //            }
+        //        }, 10);
+
+        function moveToCoordinates(obj0, obj) {
+            const speed = 2; // Adjust the speed as needed
+            const dx = obj0.x - obj.x;
+            const dy = obj0.y - obj.y;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+            let minDistance = 400;
+            if (distance > minDistance) {
+                const angle = Math.atan2(dy, dx);
+                obj.x += Math.cos(angle) * speed;
+                obj.y += Math.sin(angle) * speed;
+            }
+        }
+
+        //        setInterval(function () {
+        //            preventCollisions(enemies)
+        //            for (let i = 0; i < enemies.length; i++) {
+        //                    moveToCoordinates({ x, y }, enemies[i])
+        //            }
+        //        }, 10);
+
+        window.addEventListener("click", function (e) {
+            enemies = []
+        })
+
+        function drawEnemy(info) {
+            ctx.beginPath();
+            ctx.fillStyle = "red"
+            ctx.arc(info.x, info.y, info.r, 0, 2 * Math.PI);
+            ctx.fill()
+        }
+
+        function render() {
+            requestAnimationFrame(render);
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            //----------------------------------------------------------------
+            if (enemies.length < 250) {
+                let newCoords = setPointInRadiusRange(800, 500, 90)
+                enemies.push({ x: newCoords.newX, y: newCoords.newY, r: 20 });
+                preventCollisions(enemies)
+            }
+            //----------------------------------------------------------------
+
+            //character
+            ctx.beginPath();
+            ctx.arc(x, y, r, 0, 2 * Math.PI);
+            ctx.fillStyle = "blue"
+            ctx.fill()
+            ctx.closePath();
+
+            let coords = getWindowToCanvas(canvas, mouseX, mouseY)
+            ctx.beginPath();
+            ctx.moveTo(x, y);
+            ctx.strokeStyle = "red"
+            ctx.lineWidth = 2
+            ctx.lineTo(coords.x, coords.y);
+            ctx.stroke();
+            ctx.closePath();
+
+
+            for (let i = 0; i < enemies.length; i++) {
+                drawEnemy(enemies[i])
+            }
+
+        };
+
+        render();
+    </script>
+</body>
+
+</html>
