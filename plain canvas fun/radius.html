@@ -120,7 +120,7 @@
             let centerY = canvas.height / 2;//point of player Y*
 
             let angleToMouse = Math.atan2(coords2.y - centerY, coords2.x - centerX);
-            angleToMouse = (angleToMouse + 2 * Math.PI) % (2 * Math.PI); // Normalize to [0, 2*PI]
+            angleToMouse = (angleToMouse + 2 * Math.PI) % (2 * Math.PI); // Normalize to [0, 2*PI]  // this code is not needed
 
             // Define the range for spawning enemies (in pixels)
             let minDistance = min; // Minimum distance from the ship
