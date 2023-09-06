@@ -70,6 +70,30 @@ function checkAbsolutePointInRectangle(absoluteCenter, curr) {
 //rotation       
 //Degrees -> 45 * (Math.PI/180);
 
+function uniF1(dir, dir2, i, op) {
+    let popped = filledMatrix[dir]()
+    for (let k = 0; k < popped.length; k++) {
+        if (op == "-") {
+            popped[k].y = filledMatrix[i][k].y - size
+        } else {
+            popped[k].y = filledMatrix[i][k].y + size
+        }
+    }
+    filledMatrix[dir2](popped)
+}
+
+function uniF2(dir, dir2, i, op) {
+    for (let z = 0; z < filledMatrix.length; z++) {
+        let shifted = filledMatrix[z][dir]()
+        if (op == "-") {
+            shifted.x = filledMatrix[z][i].x - size
+        } else {
+            shifted.x = filledMatrix[z][i].x + size
+        }
+        filledMatrix[z][dir2](shifted)
+    }
+}
+
 function render() {
     requestAnimationFrame(render);
     ctx.setTransform(1, 0, 0, 1, 0, 0);
@@ -86,30 +110,6 @@ function render() {
             ctx.rect(curr.x, curr.y, size, size)
             ctx.fill()
             ctx.stroke()
-
-            function uniF1(dir, dir2, i, op) {
-                let popped = filledMatrix[dir]()
-                for (let k = 0; k < popped.length; k++) {
-                    if (op == "-") {
-                        popped[k].y = filledMatrix[i][k].y - size
-                    } else {
-                        popped[k].y = filledMatrix[i][k].y + size
-                    }
-                }
-                filledMatrix[dir2](popped)
-            }
-
-            function uniF2(dir, dir2, i, op) {
-                for (let z = 0; z < filledMatrix.length; z++) {
-                    let shifted = filledMatrix[z][dir]()
-                    if (op == "-") {
-                        shifted.x = filledMatrix[z][i].x - size
-                    } else {
-                        shifted.x = filledMatrix[z][i].x + size
-                    }
-                    filledMatrix[z][dir2](shifted)
-                }
-            }
 
             if (checkAbsolutePointInRectangle(absoluteCenter, curr)) {
                 if (i == 0 && j == 0) {
@@ -142,7 +142,6 @@ function render() {
                     uniF2("shift", "push", 1, "+")
                 }
             }
-
             // optional !
             ctx.beginPath()
             ctx.arc(absoluteCenter.x, absoluteCenter.y, 5, 0, 2 * Math.PI);
@@ -157,7 +156,6 @@ function render() {
             ctx.fillText(text, curr.x + size / 2 - ctx.measureText(text).width / 2, curr.y + (size / 2) - 10);
             ctx.fillText(text2, curr.x + size / 2 - ctx.measureText(text2).width / 2, curr.y + (size / 2) + 10);
             ctx.stroke()
-
         }
     }
 }
