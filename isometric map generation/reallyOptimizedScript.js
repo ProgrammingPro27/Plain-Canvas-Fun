@@ -35,15 +35,8 @@ function checkAbsolutePointInRectangle(absoluteCenter, curr) {
     }
 }
 
-function render() {
-    requestAnimationFrame(render);
-    ctx.setTransform(1, 0, 0, 1, 0, 0);
-    ctx.clearRect(0, 0, width, height);
-    view.apply();
-
-    let absoluteCenter = getWindowToCanvas(canvas, width / 2, height / 2)
-
-    let coordinates = [
+function updateChunkCoordinates() {
+    return [
         { x: baseX, y: baseY },
         { x: baseX, y: baseY + size },
         { x: baseX, y: baseY + 2 * size },
@@ -53,6 +46,17 @@ function render() {
         { x: baseX + 2 * size, y: baseY + 2 * size },
         { x: baseX + size, y: baseY + 2 * size }
     ];
+}
+
+let coordinates = updateChunkCoordinates();
+
+function render() {
+    requestAnimationFrame(render);
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.clearRect(0, 0, width, height);
+    view.apply();
+
+    let absoluteCenter = getWindowToCanvas(canvas, width / 2, height / 2)
 
     for (let i = 0; i < coordinates.length; i++) {
         if (checkAbsolutePointInRectangle(absoluteCenter, coordinates[i])) {
@@ -66,6 +70,7 @@ function render() {
                 case 6: baseX += size; baseY += size; break;
                 case 7: baseY += size; break;
             }
+            coordinates = updateChunkCoordinates();
         }
     }
 
