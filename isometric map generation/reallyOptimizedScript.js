@@ -34,7 +34,6 @@ function checkAbsolutePointInRectangle(absoluteCenter, curr) {
         return true
     }
 }
-
 function updateChunkCoordinates() {
     return [
         { x: baseX, y: baseY },
@@ -44,7 +43,8 @@ function updateChunkCoordinates() {
         { x: baseX + 2 * size, y: baseY },
         { x: baseX + 2 * size, y: baseY + size },
         { x: baseX + 2 * size, y: baseY + 2 * size },
-        { x: baseX + size, y: baseY + 2 * size }
+        { x: baseX + size, y: baseY + 2 * size },
+        { x: baseX + size, y: baseY + size }
     ];
 }
 
@@ -72,42 +72,30 @@ function render() {
             }
             coordinates = updateChunkCoordinates();
         }
-    }
+        //OPTIONAL elements
+        let curr = coordinates[i]
+        ctx.fillStyle = "black"
+        ctx.beginPath()
+        ctx.rect(curr.x, curr.y, size, size)
+        ctx.fill()
+        ctx.strokeStyle = "red"
+        ctx.stroke()
 
-    //OPTIONAL elements
+        ctx.beginPath()
+        let text = `X:${curr.x}`
+        let text2 = `Y:${curr.y}`
+        ctx.fillStyle = "white"
+        ctx.font = "15px Arial";
+        ctx.fillText(text, curr.x + size / 2 - ctx.measureText(text).width / 2, curr.y + (size / 2) - 10);
+        ctx.fillText(text2, curr.x + size / 2 - ctx.measureText(text2).width / 2, curr.y + (size / 2) + 10);
+        ctx.stroke()
+        //----------------
+    }
+    //OPTIONAL element
     ctx.beginPath()
     ctx.arc(absoluteCenter.x, absoluteCenter.y, 5, 0, 2 * Math.PI);
     ctx.fillStyle = "red"
     ctx.fill()
-
-    // boundaries
-    ctx.beginPath()
-    ctx.moveTo(baseX, baseY)//top
-    ctx.lineTo(baseX, baseY + 3 * size)//left
-    ctx.lineTo(baseX + 3 * size, baseY + 3 * size)//bottom
-    ctx.lineTo(baseX + 3 * size, baseY)//right
-    ctx.lineTo(baseX, baseY)//top
-    ctx.stroke()
-
-    ctx.beginPath()
-    ctx.moveTo(baseX, baseY + 2 * size)
-    ctx.lineTo(baseX + 3 * size, baseY + 2 * size)
-    ctx.stroke()
-
-    ctx.beginPath()
-    ctx.moveTo(baseX, baseY + size)
-    ctx.lineTo(baseX + 3 * size, baseY + size)
-    ctx.stroke()
-
-    ctx.beginPath()
-    ctx.moveTo(baseX + size, baseY)
-    ctx.lineTo(baseX + size, baseY + 3 * size)
-    ctx.stroke()
-
-    ctx.beginPath()
-    ctx.moveTo(baseX + 2 * size, baseY)
-    ctx.lineTo(baseX + 2 * size, baseY + 3 * size)
-    ctx.stroke()
 }
 
 render();
